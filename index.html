@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="theme-color" content="black">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta property="og:title" content="stranger video">
+    <meta property="og:description" content="stare at strangers. don't blink.">
+    <meta property="og:url" content="https://stranger.video">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://stranger.video/static/social1200x630.png">
+
+    <meta name="twitter:title" content="stranger video">
+    <meta name="twitter:description" content="stare at strangers. don't blink.">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://stranger.video/static/social1200x630.png">
+    <meta name="twitter:site" content="@itseieio">
+    <meta name="twitter:creator" content="@itseieio">
+
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="icon" href="/static/favicon.svg" />
+    <title>stranger video</title>
+</head>
+<body>
+    <!-- we can't always display: none the webcam because some browsers won't
+        let us sample from it if it's totally hidden. So we just hide it behind a big
+        div and display the cropped video on a higher z-index :/
+    -->
+    <div id="overlayToHideLocalVideo"></div>
+    <div id="dimOverlay" class="not-clickable transparent"></div>
+    <canvas id="backgroundCanvas"></canvas>
+    <canvas id="foregroundCanvas" class="not-clickable"></canvas>
+    <video id="localVideo" autoplay playsinline></video>
+
+    <audio id="readyChime" src="/static/ready-chime-tense.mp3" preload="auto"> </audio>
+    <audio id="cChime" src="/static/c-chime.mp3" preload="auto"></audio>
+    <audio id="gChime" src="/static/g-chime.mp3" preload="auto"> </audio>
+
+    <div class="header">
+        <div class="scale-y-down-fixed" id="systemMessage"></div>
+        <div id="checkboxContainer">
+            <input type="checkbox" id="eyesClosedCheckbox" name="eyesClosed">
+            <label for="eyesClosedCheckbox">eyes closed</label>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="title" class="box"><h1 id="titleText">welcome to <span class="highlight-secondary">stranger video</span></h1></div>
+        <div id="videoBox" class="box">
+            <canvas class="transparent" id="localCanvas"></canvas>
+            <video class="hidden transparent" id="remoteVideo" autoplay playsinline muted></video>
+        </div>
+        <div id="instructionsBox" class="box wiggle">
+            <span id="instructionsText" class="hidden"></span>
+            <button id="webcamButton" class="button">enable your webcam</button>
+        </div>
+    </div>
+
+    <div id="whatIsThisBox" class="transparent not-clickable">
+        <p><span class="highlight-secondary thick">this site lets you and a stranger see each other's faces</span>.
+        it doesn't do much else.</p>
+        <ul id="whatIsThisList">
+            <li>all video is cropped to show just faces</li>
+            <li>no text chat, no audio. just faces</li>
+            <li>video stops when one of you blinks</li>
+        </ul>
+        <p>it uses <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API">webrtc</a> and <a href="https://developers.google.com/mediapipe">mediapipe</a> for the hard parts. i blogged about it <a href="https://eieio.games/nonsense/game-12-stranger-video/">here</a></p>
+        <p>want to chat? email me at <a href="mailto:eieiogames@gmail.com?subject=the staring game! ah, the staring game. i love the hole in my computer where i look at strangers. thank you">eieiogames@gmail.com</a></p>
+        <button id="whatIsThisDismiss" disabled class="button">ok</button>
+    </div>
+
+    <footer class="footer" id="footer">
+        <a target="_blank" href="https://eieio.games">made by eieio</a>
+        <a target="_blank" href="https://eieio.substack.com/">email list メール</a>
+        <span id="whatIsThisText">what is this</span>
+    </footer>
+
+    <script type="module" src="/static/app.js" ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm/vision_wasm_internal.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js" crossorigin="anonymous"></script>
+</body>
+</html>
