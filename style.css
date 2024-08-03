@@ -1,0 +1,442 @@
+/* nroyalty: we can remove a lot of the hardcoded height stuff here... */
+
+:root {
+    --actual-bg-color: black;
+    --main-bg-color: transparent;
+    --main-font-color: #d5d5d5;
+    --loading-color: #240339;
+    --primary-highlight: #A7383E;
+    --secondary-highlight: #744B8E;
+    --header-footer-font-weight: 250;
+
+    --local-video-z-index: -100;
+    --hide-local-video-z-index: -90;
+    --loading-overlay-z-index: -2;
+    --background-canvas-z-index: -1;
+    --footer-z-index: 100;
+    --video-canvas-z-index: 150;
+    --dim-overlay-z-index: 199; /* gets everything but the what is this box */
+    --what-is-this-box-z-index: 200;
+    --foreground-canvas-z-index: 250;
+
+    --height: calc(100vh - env(safe-area-inset-top, 0) - env(safe-area-inset-bottom, 0));
+    --width:calc(100vw - env(safe-area-inset-right, 0) - env(safe-area-inset-left, 0));
+
+    --height-allocation-header: calc(0.1 * var(--height));
+    --height-allocation-container: var(--height);
+    --height-allocation-footer: calc(0.1 * var(--height));
+
+    /* must sum to --height-allocation-container */
+    --height-allocation-container-padding-top: var(--height-allocation-header);
+    --height-allocation-container-padding-bot: var(--height-allocation-footer);
+    --height-allocation-small-box: 5h;
+    --height-allocation-large-box: 40vh;
+}
+
+body, html {
+    background-color: var(--main-bg-color);
+    color: var(--main-font-color);
+
+    height: var(--height);
+    margin: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+}
+
+.hidden {
+    display: none;
+}
+
+.transparent {
+    opacity: 0;
+}
+
+.not-clickable {
+    pointer-events: none;
+}
+
+.header {
+    position: fixed;
+    width: var(--width);
+    left: 0;
+    top: 0;
+    height: var(--height-allocation-header);
+    display: flex;
+    justify-content: center; /* Separates the title and checkbox */
+    align-items: center; /* Vertically centers the content */
+    padding: 1vh 10vw 0;
+    box-sizing: border-box; /* Includes padding in the width and height calculations */
+}
+
+.header label {
+    margin-left: 10px; /* Adds some spacing before the checkbox */
+}
+
+#systemMessage {
+    font-size: 0.75rem;
+    transition: opacity 1s ease;
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+#checkboxContainer {
+    align-items: center;
+    height: 100%;
+    /*display: flex;*/
+    display: none;
+}
+
+#eyesClosedCheckbox {
+    margin-top: 8px;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: var(--width);
+    height: var(--height-allocation-footer);
+    opacity: 0;
+    padding: 0 0 1vh 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: var(--footer-z-index);
+}
+
+.footer a {
+    color: var(--main-font-color);
+    padding: 1vw;
+}
+
+.footer span {
+    text-decoration: underline;
+    padding: 1vw;
+    cursor: pointer;
+}
+
+#whatIsThisBox {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+
+    background: black;
+    transition: opacity 1s ease;
+
+    top: 20%;
+    width: calc(0.8 * var(--width));
+    max-width: 375px;
+    align-items: center;
+    padding: 20px 20px;
+    display: block;
+
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    z-index: var(--what-is-this-box-z-index);
+}
+
+#whatIsThisBox a {
+    color: var(--main-font-color);
+}
+
+#whatIsThisBox p {
+    text-align: center;
+}
+
+ul#whatIsThisList > li:nth-child(1) {
+    list-style: "📹 ";
+    list-style-position: outside;
+}
+
+ul#whatIsThisList > li:nth-child(2) {
+    list-style: "🤠 ";
+    list-style-position: outside;
+}
+
+ul#whatIsThisList > li:nth-child(3) {
+    list-style: "👁️ ";
+    list-style-position: outside;
+}
+
+#dimOverlay, #overlayToHideLocalVideo {
+    position: fixed;
+    transition: opacity 1s ease-out;
+    top: 0;
+    left: 0;
+    width: var(--width);
+    height: var(--height);
+}
+
+#overlayToHideLocalVideo {
+    background-color: var(--actual-bg-color);
+    z-index: var(--hide-local-video-z-index);
+}
+#dimOverlay {
+    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black */
+    z-index: var(--dim-overlay-z-index);
+}
+
+
+.box {
+    display: flex;
+    /* sometimes handy to add this border for debugging */
+    /*border: 2px solid #555;*/
+    box-sizing: border-box;
+    text-align: center;
+    justify-content: center;
+    /*align-items: center;*/
+}
+
+.box, button {
+    text-transform: lowercase;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    opacity: 1;
+    visibility: visible;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: var(--height-allocation-container);
+    align-items: center;
+    margin: 0;
+    padding-top: var(--height-allocation-container-padding-top);
+    padding-bottom: var(--height-allocation-container-padding-bot);
+}
+
+#backgroundCanvas, #foregroundCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--width);
+    height: var(--height);
+}
+
+#backgroundCanvas {
+    z-index: var(--background-canvas-z-index);
+}
+
+#foregroundCanvas {
+    z-index: var(--foreground-canvas-z-index);
+}
+
+/* nroyalty: specify just remoteVideo here? */
+video, #localCanvas {
+    aspect-ratio: 16/9;
+    /* default to assuming folks are using a computer */
+    height: calc(0.5 * var(--height));
+    width: auto;
+
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg);
+    -moz-transform: rotateY(180deg);
+    padding-top: calc(0.05 * var(--height));
+    padding-bottom: calc(0.05 * var(--height));
+}
+
+@media (orientation: portrait) {
+    video, #localCanvas {
+        width: calc(0.9 * var(--width));
+        height: auto;
+    }
+}
+
+@media (orientation: landscape) {
+    video, #localCanvas {
+        height: calc(0.5 * var(--height));
+        width: auto;
+    }
+}
+
+#localVideo {
+    /* ideally this would be display: none, but that doesn't work on some platforms
+       (ie on iOS if it's display: none then we can't sample the video). So we just...
+       put it behind the other stuff :( 
+     */
+    position: absolute;
+    z-index: var(--local-video-z-index);
+}
+
+#remoteVideo {
+    transition: opacity 1s ease;
+}
+
+#localCanvas {
+    transition: opacity 2s ease;
+}
+
+#title, #webcamButton {
+    /* we fade these in after things load */
+    opacity: 0;
+}
+
+button {
+    color: var(--main-font-color);
+    background-color: var(--main-bg-color);
+
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+
+    display: block;
+    position: relative;
+    cursor: pointer;
+    justify-content: center;
+    transition: background-color 0.3s ease; /* Smooth background color transition on hover */
+    transition: 0.3s ease; /* Smooth background color transition on hover */
+
+    border: 3px solid var(--secondary-highlight);
+}
+
+.button:disabled {
+    cursor: default;
+}
+
+#whatIsThisDismiss {
+    pointer-events: inherit;
+    padding: 4px 40px;
+    margin: 40px auto 0px;
+    border-radius: 50px;
+}
+
+#webcamButton {
+    padding: 20px 40px;
+    margin: 0 auto;
+    border-radius: 50px;
+}
+
+#webcamButton:hover, #whatIsThisDismiss:hover, .button-pressed {
+    background-color: var(--secondary-highlight);
+}
+
+#instructionsBox {
+    flex-direction: column;
+}
+
+#instructionsText {
+    transition: opacity 0.5s ease;
+    width: 100%;
+}
+
+span.highlight-primary {
+    color: var(--primary-highlight);
+}
+
+span.highlight-secondary {
+    color: var(--secondary-highlight);
+}
+
+span.thick {
+    font-weight: 600;
+}
+
+@keyframes fall {
+    to {
+        opacity: 0;
+        transform: translateY(5vh);
+    }
+}
+
+@keyframes fallIn {
+    from {
+        transform: translateY(-10vh);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes wiggle {
+    0% { transform: rotate(0deg); }
+
+    81% { transform: rotate(0deg); }
+    85% { transform: rotate(3deg); }
+    88% { transform: rotate(-3deg); }
+    91% { transform: rotate(3deg); }
+    94% { transform: rotate(-3deg); }
+    97% { transform: rotate(3deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.wiggle {
+    animation: wiggle 4s infinite;
+    display: inline-block;
+}
+
+@keyframes pulse-in {
+    0% { transform: scale(1); }
+    70% { transform: scale(1); }
+    80% { transform: scale(.95); }
+    100% { transform: scale(1); }
+}
+
+.pulse-in {
+    animation: pulse-in 2s ease-in infinite;
+}
+
+@keyframes pulse-countdown-large {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+    100% { transform: scale(1); }
+}
+
+@keyframes pulse-countdown-small {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes scale-y-down {
+    0% { transform: scaleY(1); }
+    100% { transform: scaleY(0); }
+}
+
+@keyframes scale-y-up {
+    0% { transform: scaleY(0); }
+    60% { transform: scaleY(1.5); }
+    100% { transform: scaleY(1); }
+}
+
+.scale-y-down-fixed {
+    transform: scaleY(0);
+}
+
+.scale-y-down {
+    animation: scale-y-down 0.5s ease-in-out forwards; 
+}
+
+.scale-y-up {
+    animation: scale-y-up 0.5s ease-out forwards;
+}
+
+.pulse-countdown-large {
+    animation: pulse-countdown-large 0.75s ease-out;
+}
+
+.pulse-countdown-small {
+    animation: pulse-countdown-small 0.5s ease-out;
+}
+
+span.pulse-in, span.pulse-countdown {
+    display: inline-block;
+}
